@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Космическая станция «Галактика»</title>
+    <style>
+        /* ===== ГЛОБАЛЬНЫЕ СТИЛИ ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* ===== ЗВЁЗДНЫЙ ФОН ===== */
+        #stars-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ===== ОСНОВНОЙ КОНТЕЙНЕР ===== */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== ШАПКА ===== */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo span {
+            font-weight: 300;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .header-time {
+            font-size: 22px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 24px;
+            border-radius: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ===== СЕТКА КАРТОЧЕК ===== */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: transform 0.25s ease, box-shadow 0.3s ease;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.9);
+            border-color: rgba(255, 215, 0, 0.2);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffd700;
+        }
+
+        .card-title i {
+            font-size: 24px;
+        }
+
+        /* ===== ТЕЛЕМЕТРИЯ ===== */
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 16px;
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .metric-value {
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .metric-value.green {
+            color: #4ade80;
+        }
+        .metric-value.orange {
+            color: #fb923c;
+        }
+        .metric-value.cyan {
+            color: #22d3ee;
+        }
+        .metric-value.pink {
+            color: #f472b6;
+        }
+
+        /* ===== ГРАФИК ===== */
+        .chart-container {
+            width: 100%;
+            height: 150px;
+            margin: 10px 0;
+        }
+
+        #chart-canvas {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            display: block;
+        }
+
+        /* ===== МИНИ-ИГРА ===== */
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .game-status {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .game-status strong {
+            color: #fff;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 280px;
+            aspect-ratio: 1 / 1;
+        }
+
+        .cell {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            aspect-ratio: 1 / 1;
+            user-select: none;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .cell:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: scale(1.04);
+        }
+
+        .cell.active {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+        }
+
+        .cell.active::after {
+            content: "⭐";
+        }
+
+        .game-btn {
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: #ffd700;
+            padding: 10px 30px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+        }
+
+        .game-btn:hover {
+            background: rgba(255, 215, 0, 0.25);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
+            transform: scale(1.03);
+        }
+
+        /* ===== КАРТА (CANVAS) ===== */
+        #map-canvas {
+            width: 100%;
+            height: 180px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* ===== ФУТЕР ===== */
+        footer {
+            text-align: center;
+            padding: 25px;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 14px;
+            letter-spacing: 1px;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 700px) {
+            header {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            .header-time {
+                text-align: center;
+            }
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .game-board {
+                max-width: 220px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== ЗВЁЗДЫ (CANVAS) ===== -->
+    <canvas id="stars-canvas"></canvas>
+
+    <div class="container">
+
+        <!-- ===== ШАПКА ===== -->
+        <header>
+            <div class="logo">🚀 GALAXY <span>STATION</span></div>
+            <div class="header-time" id="header-time">--:--:--</div>
+        </header>
+
+        <!-- ===== СЕТКА ===== -->
+        <div class="grid">
+
+            <!-- КАРТОЧКА 1: ТЕЛЕМЕТРИЯ -->
+            <div class="card">
+                <div class="card-title"><span>📡</span> Телеметрия</div>
+                <div class="metric-row">
+                    <span class="metric-label">Скорость</span>
+                    <span class="metric-value cyan" id="speed-val">12 847</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Высота</span>
+                    <span class="metric-value green" id="alt-val">408 200</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Топливо</span>
+                    <span class="metric-value orange" id="fuel-val">74%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Температура</span>
+                    <span class="metric-value pink" id="temp-val">-2.7 °C</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Давление</span>
+                    <span class="metric-value cyan" id="press-val">0.03 атм</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Радиация</span>
+                    <span class="metric-value orange" id="rad-val">0.24 мЗв</span>
+                </div>
+            </div>
+
+            <!-- КАРТОЧКА 2: ГРАФИК -->
+            <div class="card">
+                <div class="card-title"><span>📈</span> Активность (последние 10 с)</div>
+                <div class="chart-container">
+                    <canvas id="chart-canvas"></canvas>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:13px; color:rgba(255,255,255,0.4); padding:0 5px;">
+                    <span>0 с</span>
+                    <span>➜</span>
+                    <span>10 с</span>
+                </div>
+            </div>
+
+            <!-- КАРТОЧКА 3: МИНИ-ИГРА -->
+            <div class="card">
+                <div class="card-title"><span>🎯</span> Найди звезду</div>
+                <div class="game-area">
+                    <div class="game-status">⭐ Нашёл: <strong id="score-display">0</strong> / 10</div>
+                    <div class="game-board" id="game-board"></div>
+                    <button class="game-btn" id="reset-game">⟳ Новая игра</button>
+                </div>
+            </div>
+
+            <!-- КАРТОЧКА 4: КАРТА -->
+            <div class="card">
+                <div class="card-title"><span>🗺️</span> Трек станции</div>
+                <canvas id="map-canvas"></canvas>
+            </div>
+
+        </div>
+
+        <!-- ===== ФУТЕР ===== -->
+        <footer>
+            GALAXY STATION v.2.4.1 • Система онлайн-мониторинга • Данные обновляются в реальном времени
+        </footer>
+
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- ===== JAVASCRIPT ===== -->
+    <!-- ========================================================== -->
+    <script>
+        (function() {
+            'use strict';
+
+            // --------------------------------------------------------------
+            // 1. ЗВЁЗДНЫЙ ФОН
+            // --------------------------------------------------------------
+            const starsCanvas = document.getElementById('stars-canvas');
+            const sCtx = starsCanvas.getContext('2d');
+            let stars = [];
+            const STAR_COUNT = 280;
+
+            function resizeStars() {
+                starsCanvas.width = window.innerWidth;
+                starsCanvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeStars);
+            resizeStars();
+
+            function initStars() {
+                stars = [];
+                for (let i = 0; i < STAR_COUNT; i++) {
+                    stars.push({
+                        x: Math.random() * starsCanvas.width,
+                        y: Math.random() * starsCanvas.height,
+                        r: Math.random() * 1.8 + 0.4,
+                        a: Math.random() * 0.9 + 0.1,
+                        speed: Math.random() * 0.008 + 0.003,
+                    });
+                }
+            }
+            initStars();
+
+            let starPhase = 0;
+
+            function drawStars() {
+                sCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+                starPhase += 0.008;
+                for (const s of stars) {
+                    const flicker = 0.6 + 0.4 * Math.sin(starPhase * s.speed * 20 + s.x);
+                    const alpha = s.a * flicker;
+                    sCtx.beginPath();
+                    sCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    sCtx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                    sCtx.fill();
+                    // редкие мерцающие
+                    if (s.r > 1.5 && Math.sin(starPhase * 2 + s.x * 0.1) > 0.7) {
+                        sCtx.shadowColor = 'rgba(255, 255, 200, 0.3)';
+                        sCtx.shadowBlur = 8;
+                        sCtx.fill();
+                        sCtx.shadowBlur = 0;
+                    }
+                }
+                requestAnimationFrame(drawStars);
+            }
+            drawStars();
+
+            // --------------------------------------------------------------
+            // 2. ЧАСЫ
+            // --------------------------------------------------------------
+            function updateClock() {
+                const now = new Date();
+                const h = String(now.getHours()).padStart(2, '0');
+                const m = String(now.getMinutes()).padStart(2, '0');
+                const s = String(now.getSeconds()).padStart(2, '0');
+                document.getElementById('header-time').textContent = `${h}:${m}:${s}`;
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            // --------------------------------------------------------------
+            // 3. ТЕЛЕМЕТРИЯ (имитация)
+            // --------------------------------------------------------------
+            function updateTelemetry() {
+                const speed = Math.floor(11000 + Math.random() * 4000);
+                const alt = Math.floor(380000 + Math.random() * 60000);
+                const fuel = Math.floor(65 + Math.random() * 30);
+                const temp = (-3 + Math.random() * 2).toFixed(1);
+                const press = (0.02 + Math.random() * 0.03).toFixed(3);
+                const rad = (0.18 + Math.random() * 0.12).toFixed(2);
+
+                document.getElementById('speed-val').textContent = speed.toLocaleString();
+                document.getElementById('alt-val').textContent = alt.toLocaleString();
+                document.getElementById('fuel-val').textContent = fuel + '%';
+                document.getElementById('temp-val').textContent = temp + ' °C';
+                document.getElementById('press-val').textContent = press + ' атм';
+                document.getElementById('rad-val').textContent = rad + ' мЗв';
+            }
+            updateTelemetry();
+            setInterval(updateTelemetry, 1800);
+
+            // --------------------------------------------------------------
+            // 4. ГРАФИК (Canvas)
+            // --------------------------------------------------------------
+            const chartCanvas = document.getElementById('chart-canvas');
+            const chCtx = chartCanvas.getContext('2d');
+            let chartData = [];
+
+            function resizeChart() {
+                const rect = chartCanvas.parentElement.getBoundingClientRect();
+                chartCanvas.width = chartCanvas.clientWidth || rect.width || 300;
+                chartCanvas.height = chartCanvas.clientHeight || 150;
+            }
+            window.addEventListener('resize', resizeChart);
+            resizeChart();
+
+            function initChart() {
+                chartData = [];
+                for (let i = 0; i < 40; i++) {
+                    chartData.push(20 + Math.random() * 70);
+                }
+            }
+            initChart();
+
+            function drawChart() {
+                const w = chartCanvas.width;
+                const h = chartCanvas.height;
+                chCtx.clearRect(0, 0, w, h);
+
+                if (chartData.length < 2) return;
+
+                const max = Math.max(...chartData, 1);
+                const min = Math.min(...chartData, 0);
+                const range = max - min || 1;
+                const padding = 12;
+
+                chCtx.beginPath();
+                chCtx.strokeStyle = '#ffd700';
+                chCtx.lineWidth = 2.5;
+                chCtx.shadowColor = 'rgba(255, 215, 0, 0.2)';
+                chCtx.shadowBlur = 12;
+
+                const step = (w - padding * 2) / (chartData.length - 1);
+
+                for (let i = 0; i < chartData.length; i++) {
+                    const x = padding + i * step;
+                    const y = padding + (h - padding * 2) - ((chartData[i] - min) / range) * (h - padding * 2);
+                    if (i === 0) chCtx.moveTo(x, y);
+                    else chCtx.lineTo(x, y);
+                }
+                chCtx.stroke();
+                chCtx.shadowBlur = 0;
+
+                // заливка
+                const lastX = padding + (chartData.length - 1) * step;
+                const lastY = padding + (h - padding * 2) - ((chartData[chartData.length - 1] - min) / range) * (h - padding *
+                2);
+                chCtx.lineTo(lastX, h - padding);
+                chCtx.lineTo(padding, h - padding);
+                chCtx.closePath();
+                const grad = chCtx.createLinearGradient(0, 0, 0, h);
+                grad.addColorStop(0, 'rgba(255, 215, 0, 0.15)');
+                grad.addColorStop(1, 'rgba(255, 215, 0, 0.0)');
+                chCtx.fillStyle = grad;
+                chCtx.fill();
+            }
+
+            function updateChart() {
+                chartData.push(20 + Math.random() * 70);
+                if (chartData.length > 45) chartData.shift();
+                drawChart();
+            }
+            drawChart();
+            setInterval(updateChart, 800);
+
+            // --------------------------------------------------------------
+            // 5. МИНИ-ИГРА "Найди звезду"
+            // --------------------------------------------------------------
+            const boardEl = document.getElementById('game-board');
+            const scoreDisplay = document.getElementById('score-display');
+            let boardState = [];
+            let score = 0;
+            const SIZE = 5;
+            const MAX_SCORE = 10;
+            let gameActive = true;
+
+            function renderBoard() {
+                boardEl.innerHTML = '';
+                for (let r = 0; r < SIZE; r++) {
+                    for (let c = 0; c < SIZE; c++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell' + (boardState[r][c] ? ' active' : '');
+                        cell.dataset.row = r;
+                        cell.dataset.col = c;
+                        cell.addEventListener('click', onCellClick);
+                        boardEl.appendChild(cell);
+                    }
+                }
+            }
+
+            function initBoard() {
+                boardState = Array.from({ length: SIZE }, () => Array(SIZE).fill(false));
+                // размещаем 3 звезды
+                placeStars(3);
+                renderBoard();
+            }
+
+            function placeStars(count) {
+                let placed = 0;
+                let attempts = 0;
+                while (placed < count && attempts < 100) {
+                    attempts++;
+                    const r = Math.floor(Math.random() * SIZE);
+                    const c = Math.floor(Math.random() * SIZE);
+                    if (!boardState[r][c]) {
+                        boardState[r][c] = true;
+                        placed++;
+                    }
+                }
+            }
+
+            function onCellClick(e) {
+                if (!gameActive) return;
+                const row = parseInt(e.currentTarget.dataset.row);
+                const col = parseInt(e.currentTarget.dataset.col);
+                if (boardState[row][col]) {
+                    boardState[row][col] = false;
+                    e.currentTarget.classList.remove('active');
+                    score++;
+                    scoreDisplay.textContent = score;
+                    // добавляем новые звезды
+                    placeStars(2);
+                    renderBoard(); // перерисовываем, чтобы показать новые звезды
+                    if (score >= MAX_SCORE) {
+                        gameActive = false;
+                        setTimeout(() => {
+                            alert('🌟 Поздравляю! Ты собрал все 10 звёзд! 🌟');
+                        }, 150);
+                    }
+                } else {
+                    // лёгкий эффект промаха
+                    e.currentTarget.style.background = 'rgba(255,0,0,0.15)';
+                    setTimeout(() => {
+                        e.currentTarget.style.background = '';
+                    }, 200);
+                }
+            }
+
+            function resetGame() {
+                score = 0;
+                gameActive = true;
+                scoreDisplay.textContent = '0';
+                initBoard();
+            }
+
+            document.getElementById('reset-game').addEventListener('click', resetGame);
+
+            // инициализация игры
+            initBoard();
+
+            // --------------------------------------------------------------
+            // 6. КАРТА (Canvas) — имитация орбиты
+            // --------------------------------------------------------------
+            const mapCanvas = document.getElementById('map-canvas');
+            const mCtx = mapCanvas.getContext('2d');
+            let mapAngle = 0;
+
+            function resizeMap() {
+                const rect = mapCanvas.parentElement.getBoundingClientRect();
+                mapCanvas.width = mapCanvas.clientWidth || rect.width || 300;
+                mapCanvas.height = mapCanvas.clientHeight || 180;
+            }
+            window.addEventListener('resize', resizeMap);
+            resizeMap();
+
+            function drawMap() {
+                const w = mapCanvas.width;
+                const h = mapCanvas.height;
+                mCtx.clearRect(0, 0, w, h);
+
+                // Земля
+                const cx = w / 2;
+                const cy = h / 2;
+                const radius = Math.min(w, h) * 0.2;
+
+                mCtx.beginPath();
+                mCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+                const earthGrad = mCtx.createRadialGradient(cx - 10, cy - 10, 5, cx, cy, radius);
+                earthGrad.addColorStop(0, '#4ade80');
+                earthGrad.addColorStop(0.7, '#22d3ee');
+                earthGrad.addColorStop(1, '#1e293b');
+                mCtx.fillStyle = earthGrad;
+                mCtx.fill();
+                mCtx.shadowColor = 'rgba(34, 211, 238, 0.2)';
+                mCtx.shadowBlur = 30;
+                mCtx.fill();
+                mCtx.shadowBlur = 0;
+
+                // Орбита
+                const orbitR = radius * 1.9;
+                mCtx.beginPath();
+                mCtx.ellipse(cx, cy, orbitR, orbitR * 0.6, 0, 0, Math.PI * 2);
+                mCtx.strokeStyle = 'rgba(255,255,255,0.08)';
+                mCtx.lineWidth = 1;
+                mCtx.setLineDash([6, 10]);
+                mCtx.stroke();
+                mCtx.setLineDash([]);
+
+                // Корабль (движется)
+                const shipAngle = mapAngle;
+                const shipX = cx + Math.cos(shipAngle) * orbitR;
+                const shipY = cy + Math.sin(shipAngle) * orbitR * 0.6;
+
+                mCtx.beginPath();
+                mCtx.arc(shipX, shipY, 10, 0, Math.PI * 2);
+                const shipGrad = mCtx.createRadialGradient(shipX - 3, shipY - 3, 2, shipX, shipY, 10);
+                shipGrad.addColorStop(0, '#ffd700');
+                shipGrad.addColorStop(1, '#f7971e');
+                mCtx.fillStyle = shipGrad;
+                mCtx.shadowColor = 'rgba(255, 215, 0, 0.6)';
+                mCtx.shadowBlur = 25;
+                mCtx.fill();
+                mCtx.shadowBlur = 0;
+
+                // линия от корабля
+                mCtx.beginPath();
+                mCtx.moveTo(cx, cy);
+                mCtx.lineTo(shipX, shipY);
+                mCtx.strokeStyle = 'rgba(255, 215, 0, 0.1)';
+                mCtx.lineWidth = 1;
+                mCtx.stroke();
+
+                mapAngle += 0.012;
+                if (mapAngle > Math.PI * 2) mapAngle -= Math.PI * 2;
+
+                requestAnimationFrame(drawMap);
+            }
+            drawMap();
+
+            // --------------------------------------------------------------
+            // 7. ПЕРЕРИСОВКА ПРИ ИЗМЕНЕНИИ РАЗМЕРА (для графиков)
+            // --------------------------------------------------------------
+            window.addEventListener('resize', () => {
+                resizeChart();
+                drawChart();
+                resizeMap();
+            });
+
+            console.log('🚀 GALAXY STATION загружена!');
+        })();
+    </script>
+
+</body>
+</html>
